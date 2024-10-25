@@ -57,7 +57,9 @@ function fetchAnimeLinks() {
                 if (href) {
                     const fullLink = `https://jut.su/${href}`;
                     const name = $(element).find('.aaname').text().trim();
-                    results.push({ link: fullLink, name });
+                    if (name) {
+                        results.push({ link: fullLink, name });
+                    }
                 }
             });
             return results;

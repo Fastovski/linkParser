@@ -58,15 +58,24 @@ function extractEpisodeLinks(html) {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const html = yield fetchHTML(URL);
-        const animeLinks = yield extractAnimeLinks(html);
+        let animeLinks = [];
         let episodeLinks = [];
-        for (const currentAnimeLink of animeLinks) {
-            console.log(`Fetching episodes for anime: ${currentAnimeLink}`);
-            const animeHtml = yield fetchHTML(currentAnimeLink);
-            episodeLinks = yield extractEpisodeLinks(animeHtml);
+        let currentIndex = 0;
+        while (currentIndex < animeLinks.length || animeLinks.length === 0) {
+            let currentAnimeLink;
+            if (animeLinks.length === 0) {
+                const html = yield fetchHTML(URL);
+                animeLinks = yield extractAnimeLinks(html);
+                currentAnimeLink = animeLinks[0];
+            }
+            else {
+                currentAnimeLink = animeLinks[currentIndex];
+            }
+            const html = yield fetchHTML(currentAnimeLink);
+            episodeLinks = yield extractEpisodeLinks(html);
             console.log(`Extracted ${episodeLinks.length} episode links for anime: ${currentAnimeLink}`);
             episodeLinks.forEach(link => console.log(link));
+            currentIndex++;
         }
         console.log('All links extracted successfully!');
         return animeLinks;

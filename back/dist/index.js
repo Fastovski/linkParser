@@ -37,24 +37,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
 const cheerio = __importStar(require("cheerio"));
+const iconv = __importStar(require("iconv-lite"));
 function fetchAnimeLinks() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const url = 'https://jut.su/anime/action-demons/2024/';
-            const { data } = yield axios_1.default.get(url, {
+            const response = yield axios_1.default.get(url, {
+                responseType: 'arraybuffer', // Получаем ответ как массив байтов
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                },
             });
-            // Выводим полученный HTML для диагностики
-            console.log(data);
+            // Конвертируем данные из 'windows-1251' в 'UTF-8'
+            const data = iconv.decode(Buffer.from(response.data), 'windows-1251');
             const $ = cheerio.load(data);
             const results = [];
             $('div.all_anime_global a').each((index, element) => {
                 const href = $(element).attr('href');
                 if (href) {
                     const fullLink = `https://jut.su/${href}`;
-                    const name = $(element).find('.aaname').parent().text().trim();
+                    const name = $(element).find('.aaname').text().trim();
                     results.push({ link: fullLink, name });
                 }
             });
@@ -66,7 +68,6 @@ function fetchAnimeLinks() {
         }
     });
 }
-// Используем функцию
-fetchAnimeLinks().then(results => {
+fetchAnimeLinks().then((results) => {
     console.log('Извлеченные ссылки и названия:', results);
 });

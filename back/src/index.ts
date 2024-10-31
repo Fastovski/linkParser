@@ -7,9 +7,9 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import type { Browser, Page } from 'puppeteer';
 puppeteer.use(StealthPlugin());
 
-const uri = 'mongodb://localhost:27017'; // URL вашей базы данных
-const dbName = 'animeService'; // Имя базы данных
-const collectionName = 'animeLinks'; // Имя коллекции
+const uri = 'mongodb://localhost:27017'; 
+const dbName = 'animeService'; 
+const collectionName = 'animeLinks'; 
 
 async function fetchAnimeLinks(): Promise<{ link: string; name: string }[]> {
   try {
@@ -76,10 +76,9 @@ let page: Page | null = null;
 
 async function initBrowser() {
   if (!browser) {
-    browser = await puppeteer.launch({ headless: true }); // запустим браузер в headless-режиме
+    browser = await puppeteer.launch({ headless: true }); // headless-режим
     page = await browser.newPage();
 
-    // Установим необходимые заголовки один раз
     await page.setUserAgent(
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       
@@ -100,23 +99,16 @@ async function fetchVideo(videoLink: string): Promise<string[]> {
   try {
     await initBrowser();
 
-    // Переход на страницу с видео
     if (page) {
       await page.goto(videoLink, { waitUntil: 'domcontentloaded' });
-
-      // Задержка на 2 секунды
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
-
-      // Ожидаем появления элемента с id #my-player_html5_api
       await page.waitForSelector('#my-player_html5_api');
 
-      // Извлекаем контент страницы
       const content = await page.content();
       const $ = cheerio.load(content);
 
       const animeVideos: string[] = [];
 
-      // Парсинг только ссылок с res="1080" и res="720"
       $('#my-player_html5_api source').each((index, element) => {
         const src = $(element).attr('src');
         const type = $(element).attr('type');
@@ -150,7 +142,6 @@ async function main() {
     const videos = await fetchAdditionalData(link);
     const animeVideos: string[][] = [];
 
-    // Для каждой ссылки на серию нужно получить список видео
     for (const videoLink of videos) {
       const seriesVideos = await fetchVideo(videoLink);
       animeVideos.push(seriesVideos);
